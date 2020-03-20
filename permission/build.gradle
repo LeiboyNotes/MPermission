@@ -1,0 +1,155 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "29.0.2"
+
+
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles 'consumer-rules.pro'
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+
+        }
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    implementation 'androidx.appcompat:appcompat:1.1.0'
+    implementation 'org.aspectj:aspectjrt:1.8.13'
+}
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+//
+//final def log = project.logger
+//final def variants = project.android.libraryVariants
+//
+//variants.all { variant ->
+//
+//    if (!variant.buildType.isDebuggable()) {
+//        log.debug("Skipping non-debuggable build type '${variant.buildType.name}'.")
+//        return;
+//    }
+//
+//    JavaCompile javaCompile = variant.javaCompile
+//
+//    javaCompile.doLast {
+//
+//        String[] args = ["-showWeaveInfo",
+//
+//                         "-1.8",
+//
+//                         "-inpath", javaCompile.destinationDir.toString(),
+//
+//                         "-aspectpath", javaCompile.classpath.asPath,
+//
+//                         "-d", javaCompile.destinationDir.toString(),
+//
+//                         "-classpath", javaCompile.classpath.asPath,
+//
+//                         "-bootclasspath", project.android.bootClasspath.join(File.pathSeparator)]
+//
+//        log.debug "ajc args: " + Arrays.toString(args)
+//
+//        MessageHandler handler = new MessageHandler(true);
+//
+//        new Main().run(args, handler);
+//
+//        for (IMessage message : handler.getMessages(null, true)) {
+//
+//            switch (message.getKind()) {
+//
+//                case IMessage.ABORT:
+//
+//                case IMessage.ERROR:
+//
+//                case IMessage.FAIL:
+//
+//                    log.error message.message, message.thrown
+//
+//                    break;
+//
+//                case IMessage.WARNING:
+//
+//                    log.warn message.message, message.thrown
+//
+//                    break;
+//
+//                case IMessage.INFO:
+//
+//                    log.info message.message, message.thrown
+//
+//                    break;
+//
+//                case IMessage.DEBUG:
+//
+//                    log.debug message.message, message.thrown
+//
+//                    break;
+//            }
+//        }
+//    }
+//}
+
+import org.aspectj.bridge.IMessage
+import org.aspectj.bridge.MessageHandler
+import org.aspectj.tools.ajc.Main
+
+final def log = project.logger
+final def variants = project.android.libraryVariants
+//TODO  application 和 library 的区别  AspectJ不能跨Module使用
+//final def variants = project.android.applicationVariants
+variants.all { variant ->
+    if (!variant.buildType.isDebuggable()) {//非 debug 的 buildtype，打印 log退出；必要时可以不用这段判断
+        log.debug("Skipping non-debuggable build type '${variant.buildType.name}'.")
+        return
+    }
+
+    variant.javaCompileProvider.configure {
+        it.doLast {
+            String[] args = ["-showWeaveInfo",
+                             "-1.8",
+                             "-inpath", it.destinationDir.toString(),
+                             "-aspectpath", it.classpath.asPath,
+                             "-d", it.destinationDir.toString(),
+                             "-classpath", it.classpath.asPath,
+                             "-bootclasspath", project.android.bootClasspath.join(File.pathSeparator)]
+            log.debug "ajc args: " + Arrays.toString(args)
+
+            MessageHandler handler = new MessageHandler(true)
+            new Main().run(args, handler)
+            for (IMessage message : handler.getMessages(null, true)) {
+                switch (message.getKind()) {
+                    case IMessage.ABORT:
+                    case IMessage.ERROR:
+                    case IMessage.FAIL:
+                        log.error message.message, message.thrown
+                        break
+                    case IMessage.WARNING:
+                        log.warn message.message, message.thrown
+                        break
+                    case IMessage.INFO:
+                        log.info message.message, message.thrown
+                        break
+                    case IMessage.DEBUG:
+                        log.debug message.message, message.thrown
+                        break
+                }
+            }
+        }
+    }
+}

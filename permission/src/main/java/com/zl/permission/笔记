@@ -1,0 +1,27 @@
+AspectJ
+
+APT编译生成，错误的
+
+javac
+Test.java  javac   Test.class(JVM认识)
+
+javac+AspectJ = AspectJ
+Test.java   AspectJ   Test.class（自由的在字节码里面修改东西）(JVM认识的)
+
+AspectJ依赖Java环境
+thisObject == null 环境有问题
+
+
+-----
+依赖倒置原则：
+面向高层（跳转），不面向细节（高扩展 == 有标准）
+
+使用的时候：
+面向高层（抽象，接口）
+
+面向接口编程
+
+单一原则：
+
+-----
+作业：用APT + 反射的方式，实现本节课类似的功能点
